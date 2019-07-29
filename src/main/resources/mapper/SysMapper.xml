@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.all.bnmg.dao.SysMapper">
+    <resultMap id="BaseResultMap" type="com.all.bnmg.entity.SysParam">
+        <id column="key" jdbcType="VARCHAR" property="key" />
+        <result column="name" jdbcType="VARCHAR" property="name" />
+        <result column="val" jdbcType="VARCHAR" property="val" />
+    </resultMap>
+    <delete id="sysParam_deleteByPrimaryKey" parameterType="java.lang.String">
+        delete from t_sys_param
+        where `key` = #{key,jdbcType=VARCHAR}
+    </delete>
+    <insert id="sysParam_insert" parameterType="com.all.bnmg.entity.SysParam">
+        insert into t_sys_param (`key`, `name`, val
+        )
+        values (#{key,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{val,jdbcType=VARCHAR}
+        )
+    </insert>
+    <update id="sysParam_updateByPrimaryKey" parameterType="com.all.bnmg.entity.SysParam">
+        update t_sys_param
+        set `name` = #{name,jdbcType=VARCHAR},
+        val = #{val,jdbcType=VARCHAR}
+        where `key` = #{key,jdbcType=VARCHAR}
+    </update>
+    <select id="sysParam_selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+        select `key`, `name`, val
+        from t_sys_param
+        where `key` = #{key,jdbcType=VARCHAR}
+    </select>
+    <select id="sysParam_selectAll" resultMap="BaseResultMap">
+        select `key`, `name`, val
+        from t_sys_param
+    </select>
+    <!-- 获取网站配置信息-->
+    <select id="getWebConfig" resultType="java.util.Map">
+        select *
+        from t_sys_webconfig
+    </select>
+</mapper>

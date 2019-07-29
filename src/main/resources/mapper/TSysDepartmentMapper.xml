@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.all.bnmg.dao.TSysDepartmentMapper">
+  <resultMap id="BaseResultMap" type="com.all.bnmg.entity.TSysDepartment">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="pid" jdbcType="VARCHAR" property="pid" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="desc" jdbcType="VARCHAR" property="desc" />
+    <result column="status" jdbcType="INTEGER" property="status" />
+    <result column="logdate" jdbcType="TIMESTAMP" property="logdate" />
+  </resultMap>
+  <resultMap id="TreeNodeResultMap" type="com.all.bnmg.entity.TreeNode">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="pid" jdbcType="VARCHAR" property="pid" />
+    <result column="name" jdbcType="VARCHAR" property="title" />
+    <result column="href" jdbcType="VARCHAR" property="href" />
+    <result column="spread" jdbcType="VARCHAR" property="spread" />
+    <result column="checked" jdbcType="VARCHAR" property="checked" />
+    <result column="disabled" jdbcType="VARCHAR" property="disabled" />
+  </resultMap>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_sys_department
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.all.bnmg.entity.TSysDepartment">
+    insert into t_sys_department (id,pid, `name`, `desc`,
+      `status`, logdate)
+    values (#{id,jdbcType=VARCHAR},#{pid,jdbcType=VARCHAR}, #{name,jdbcType=VARCHAR}, #{desc,jdbcType=VARCHAR},
+      #{status,jdbcType=INTEGER}, #{logdate,jdbcType=TIMESTAMP})
+  </insert>
+  <update id="updateByPrimaryKey" parameterType="com.all.bnmg.entity.TSysDepartment">
+    update t_sys_department
+    <trim prefix="set" suffixOverrides=",">
+      <if test="name!=null">name=#{name},</if>
+      <if test="status!=null">status=#{status},</if>
+      <if test="desc!=null">desc=#{desc},</if>
+    </trim>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select *
+    from t_sys_department
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <select id="selectAll" resultMap="BaseResultMap">
+    select id, pid, `name`, `desc`, `status`, logdate
+    from t_sys_department
+  </select>
+  <select id="selectByPcode" resultMap="TreeNodeResultMap" parameterType="java.lang.String">
+    select id, pid,pid parentId, `name` title,'' href, '' spread, '' checked, '' disabled,name label
+    from t_sys_department where id like concat(#{pcode},'%')
+  </select>
+</mapper>

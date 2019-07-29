@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.all.bnmg.dao.AuthDao" >
+    <resultMap id="TreeNodeResultMap" type="com.all.bnmg.entity.TreeNode">
+        <id column="id" jdbcType="VARCHAR" property="id" />
+        <result column="pid" jdbcType="VARCHAR" property="pid" />
+        <result column="parentId" jdbcType="VARCHAR" property="parentId" />
+        <result column="name" jdbcType="VARCHAR" property="title" />
+        <result column="href" jdbcType="VARCHAR" property="href" />
+        <result column="spread" jdbcType="VARCHAR" property="spread" />
+        <result column="checked" jdbcType="VARCHAR" property="checked" />
+        <result column="disabled" jdbcType="VARCHAR" property="disabled" />
+        <result column="basicData" jdbcType="VARCHAR" property="basicData" />
+        <result column="recordData" jdbcType="VARCHAR" property="recordData" />
+    </resultMap>
+    <!-- 根据用户获取他拥有的权限结构树 -->
+    <select id="getAuthByUser" resultMap="TreeNodeResultMap" parameterType="java.lang.String">
+        SELECT a.code id,a.pcode pid,a.pcode parentId,a.url href,(CASE WHEN SUM(come)>0 THEN 'true' ELSE 'false' END) disabled,a.type,a.name title,a.name label,a.descript,COUNT(1),SUM(come) , '' spread, '' checked
+        FROM (
+
+        SELECT *,0 come FROM t_sys_auth t WHERE t.`code` IN(
+        SELECT authcode FROM `t_sys_admin_auth` WHERE username = #{username}
+        ) and status =0
+        UNION ALL
+        SELECT *,1 come FROM t_sys_auth t WHERE t.`code` IN(
+        SELECT authcode FROM `t_sys_role_auth` WHERE roleid IN(
+        SELECT roleid FROM `t_sys_admin_role` WHERE username = #{username}
+        )
+        )and status =0
+
+        ) a GROUP BY a.code,a.pcode,a.url,a.status,a.type,a.name,a.descript
+    </select>
+    <!-- 根据角色获取他拥有的权限结构树 -->
+    <select id="getAuthByRole" resultMap="TreeNodeResultMap" parameterType="java.lang.String">
+        SELECT a.code id,a.pcode pid,a.pcode parentId,a.url href,a.status disabled,a.type,a.name title,a.name label,a.descript  , '' spread, '' checked
+        FROM t_sys_auth a WHERE a.code IN(
+            SELECT authcode FROM t_sys_role_auth r WHERE r.roleid = #{roleid}
+            )
+    </select>
+    <!-- 超级管理员获取所有权限 -->
+    <select id="getAuthAll" resultMap="TreeNodeResultMap" >
+        select code id, pcode pid,pcode parentId, `name` title,'' href, '' spread, '' checked, '' disabled,name label
+        from t_sys_auth
+    </select>
+    <!-- 获取拥有某权限的用户 -->
+    <select id="getUserByAuth" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT id,name,username FROM `t_sys_admin` WHERE username IN(
+        SELECT a.`username` FROM `t_sys_admin_auth` a WHERE a.`authcode` = #{authcode}
+        )
+        <if test="pcode != null">
+            and depcode like concat(#{pcode},'%')
+        </if>
+    </select>
+    <!-- 权限批量赋权用户 -->
+    <insert id="batchAddUserByAuth">
+        INSERT INTO `t_sys_admin_auth`(username,authcode) SELECT username,#{authcode} FROM `t_sys_admin` WHERE username IN
+        <foreach collection="userNames" item="username" separator="," open="(" close=")">
+            #{username}
+        </foreach>
+    </insert>
+    <!-- 权限批量赋权角色 -->
+    <insert id="batchAddRoleByAuth">
+        INSERT INTO `t_sys_role_auth`(roleid,authcode) SELECT id,#{authcode} FROM `t_sys_role` WHERE id IN
+        <foreach collection="roleIds" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </insert>
+    <!-- 权限批量删除用户 -->
+    <delete id="batchDeleteUserByAuth">
+        delete from t_sys_admin_auth where authcode = #{authcode} and username in
+        <foreach collection="userNames" item="username" separator="," open="(" close=")">
+            #{username}
+        </foreach>
+    </delete>
+    <!-- 权限批量删除角色 -->
+    <delete id="batchDeleteRoleByAuth">
+        delete from t_sys_role_auth where authcode = #{authcode} and roleid in
+        <foreach collection="roleIds" item="id" separator="," open="(" close=")">
+            #{id}
+        </foreach>
+    </delete>
+
+    <!-- 用户批量赋权 -->
+    <insert id="batchPutAuthByUser">
+        INSERT INTO `t_sys_admin_auth`(username,authcode) SELECT #{username},code FROM `t_sys_auth` WHERE code IN
+        <foreach collection="authList" item="auth" separator="," open="(" close=")">
+            #{auth}
+        </foreach>
+    </insert>
+    <!--用户权限清理 -->
+    <delete id="userAuthDel">
+        delete from t_sys_admin_auth where username=#{username}
+    </delete>
+
+    <!-- 角色批量赋权 -->
+    <insert id="batchPutAuthByRole">
+        INSERT INTO `t_sys_role_auth`(roleid,authcode) SELECT #{roleid},code FROM `t_sys_auth` WHERE code IN
+        <foreach collection="authList" item="auth" separator="," open="(" close=")">
+            #{auth}
+        </foreach>
+    </insert>
+    <!--角色权限清理 -->
+    <delete id="roleAuthDel">
+        delete from t_sys_role_auth where roleid =#{roleid}
+    </delete>
+
+    <!-- 获取拥有某权限的角色 -->
+    <select id="getRoleByAuth" parameterType="java.util.Map" resultType="java.util.Map">
+        SELECT id,name,status FROM `t_sys_role` WHERE 1=1
+        <if test="authcode != null">
+            AND id IN(
+            SELECT a.`roleid` FROM `t_sys_role_auth` a WHERE a.`authcode` = #{authcode}
+            )
+        </if>
+        <if test="noauthcode != null">
+            AND id not IN(
+            SELECT a.`roleid` FROM `t_sys_role_auth` a WHERE a.`authcode` = #{noauthcode}
+            )
+        </if>
+    </select>
+    <!-- 条件查询权限-->
+    <select id="getAuthByScope" parameterType="java.util.Map" resultType="java.util.Map" >
+        SELECT * FROM `t_sys_auth` t
+        <where>
+            <if test="code != null">
+                t.`code` =#{code}
+            </if>
+            <if test="pcode != null">
+                and t.`pcode` =#{pcode}
+            </if>
+            <if test="status != null">
+                and t.`status` =#{status}
+            </if>
+            <if test="type != null">
+                and t.`type` =#{type}
+            </if>
+        </where>
+    </select>
+</mapper>

@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.all.bnmg.dao.AdminDao" >
+    <select id="get" parameterType="string" resultType="admin" >
+        select id,username, password,phone,solt,type,depcode,status  from t_sys_admin where userName = #{loginName}
+    </select>
+
+    <select id="getAdminType" parameterType="string" resultType="java.util.Map" >
+        SELECT tp.`typeid`,tp.`typename`,tp.`home` FROM t_sys_admin t,t_sys_admintype tp WHERE t.`type` = tp.`typeid` AND t.`userName` =#{loginName}
+    </select>
+    <update id="updateByUserName" parameterType="java.util.Map">
+        update t_sys_admin
+        <trim prefix="set" suffixOverrides=",">
+            <if test="name!=null">name=#{name},</if>
+            <if test="pic!=null">pic=#{pic},</if>
+            <if test="password!=null">password=#{password},</if>
+            <if test="salt!=null">salt=#{salt},</if>
+            <if test="phone!=null">phone=#{phone},</if>
+            <if test="status!=null">status=#{status},</if>
+        </trim>
+        where username = #{username,jdbcType=VARCHAR}
+    </update>
+    <delete id="batchDelete">
+        delete from t_sys_admin where username in
+        <foreach collection="userNames" item="username" separator="," open="(" close=")">
+            #{username}
+        </foreach>
+    </delete>
+    <select id="getAdminByDepart" parameterType="java.util.Map" resultType="java.util.Map" >
+        SELECT t.*,d.name depname FROM t_sys_admin t LEFT JOIN t_sys_department d ON t.depcode = d.id WHERE t.`depcode` LIKE concat(#{pcode},'%')
+        <if test="type != null">
+            AND t.`type`  = #{type}
+        </if>
+        <if test="authcode != null">
+            AND t.username in(
+              SELECT username FROM t_sys_admin_auth WHERE authcode = #{authcode}
+            )
+        </if>
+        <if test="noauthcode != null">
+            AND t.username not in(
+            SELECT username FROM t_sys_admin_auth WHERE authcode = #{noauthcode}
+            )
+        </if>
+        <if test="roleid != null">
+            AND t.username in(
+            SELECT username FROM t_sys_admin_role WHERE roleid = #{roleid}
+            )
+        </if>
+        <if test="noroleid != null">
+            AND t.username not in(
+            SELECT username FROM t_sys_admin_role WHERE roleid = #{noroleid}
+            )
+        </if>
+        <if test="field != null">
+           order by concat(#{field},' ',#{order})
+        </if>
+    </select>
+    <select id="getAdminByRole" parameterType="java.util.Map" resultType="java.util.Map" >
+        SELECT t.*  FROM t_sys_admin t  where  t.username in(
+            SELECT username FROM t_sys_admin_role WHERE roleid = #{roleid}
+            )
+        <if test="field != null">
+            order by concat(#{field},' ',#{order})
+        </if>
+    </select>
+    <select id="p_changeDepart" parameterType="java.util.HashMap" statementType="CALLABLE" resultType="java.util.HashMap">
+        <![CDATA[
+            {call P_admin_changeDepart(
+            #{depcode,    mode=IN,  jdbcType=VARCHAR},
+            #{usernames,  mode=IN,  jdbcType=VARCHAR},
+            #{o_status,   mode=OUT, jdbcType=INTEGER},
+            #{o_msg,      mode=OUT, jdbcType=VARCHAR}
+            )}
+  	   ]]>
+    </select>
+</mapper>
