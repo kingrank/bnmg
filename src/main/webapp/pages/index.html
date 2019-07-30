@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <script type="text/javascript" src="../resource/util/vue.js"></script>
+    <script type="text/javascript" src="../resource/util/vue-router.js"></script>
+    <title>Title</title>
+</head>
+<body>
+    <div id="web">
+        <p>
+            <router-link to="/you">你</router-link>
+            <router-link to="/me">我</router-link>
+            <router-link to="/he">他</router-link>
+        </p>
+        <router-view></router-view>
+    </div>
+<script>
+    const You = {template:"<div>你好</div>"};
+    const Me = {template:"<div>我好</div>"};
+    const He = {template:"<div>他好</div>"};
+    const routes=[
+        {path:"/you",component:You},
+        {path:"/me",component:Me},
+        {path:"/he",component:He}
+    ];
+    const router = new VueRouter({
+        routes
+    });
+    const vue = new Vue({
+        router,
+    }).$mount("#web");
+
+</script>
+</body>
+</html>
