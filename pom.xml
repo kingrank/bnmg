@@ -40,11 +40,12 @@
 			<scope>test</scope>
 		</dependency>
 
-		<!--<dependency>
+		<!--热部署-->
+		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-devtools</artifactId>
 			<optional>true</optional>
-		</dependency>-->
+		</dependency>
 		<!-- servlet依赖. -->
 		<dependency>
 			<groupId>javax.servlet</groupId>
@@ -152,6 +153,9 @@
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
+				<configuration>
+					<fork>true</fork>
+				</configuration>
 			</plugin>
 			<!--添加mybatis generator maven插件-->
 			<plugin>
