@@ -82,8 +82,8 @@ function reSizeContent(){
         $("#buttomright").width("90%");
     }
     var upw = $("#cinfo").width();
-    $("#cinfo").height(upw);
-    $(".layui-nav-tree").height(ah-toph-upw);
+    $("#cinfo").height(40);
+    $(".layui-nav-tree").height(ah-toph-40);
 }
 function tabEdit(ele){
     var type = ele.type;
