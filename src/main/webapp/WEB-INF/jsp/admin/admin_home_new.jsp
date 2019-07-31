@@ -90,8 +90,8 @@
     <div id="buttom">
         <div style="width: 10%;float:  left;" id="buttomleft">
             <div style="text-align: center; background: rgb(22, 33, 51) none repeat scroll 0% 0%;" id="cinfo">
-                <img src="${context}/resource/img/L_profile@2x.png" style="width: 40%;margin-top: 17%;">
-                <label id="name" style="float: left;width: 100%;text-align: center;color: white;margin-top: 12%;font-size: 11px;">北京总部管理员</label>
+               <%-- <img src="${context}/resource/img/L_profile@2x.png" style="width: 40%;margin-top: 17%;">
+                <label id="name" style="float: left;width: 100%;text-align: center;color: white;margin-top: 12%;font-size: 11px;">北京总部管理员</label>--%>
             </div>
             <ul class="layui-nav layui-nav-tree" lay-filter="menulist" style="height: 100%;width: 100%;border-radius: 0px;overflow-y: auto;">
                 <!-- 侧边导航: <ul class="layui-nav layui-nav-tree layui-nav-side"> -->
