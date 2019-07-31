@@ -15,12 +15,7 @@ public class MenuService {
     @Autowired
     private TSysMenuMapper tSysMenuMapper;
     @Cacheable(value = "menu", key = "'user_'+ #userName")
-    @CacheUtil
     public List<TSysMenu> queryUserByUserName(String userName){
-        List<TSysMenu> menulist = (List<TSysMenu>)EHCacheUtils.getCache("auth","menu_"+userName);
-        if(menulist!=null){
-            return menulist;
-        }
         return tSysMenuMapper.selectByUser(userName);
     }
 }
