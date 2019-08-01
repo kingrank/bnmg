@@ -30,7 +30,7 @@
             <ul id="tree" class="dtree" data-id="0"></ul>
         </div>
         <div style="width: 80%;overflow: auto;float: left;text-align: center;">
-            <label class="index-title-lable">香港店</label>
+            <label class="index-title-lable" style="padding-left: 1%;width: 99%;">香港店<span style="float: right;">更多</span> </label>
             <div style="width: 98%; text-align: center;float: left;margin-left: 1%;">
                 <label class="index-title-lable">系统商户数据</label>
                 <div class="index-div ">
