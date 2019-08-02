@@ -78,7 +78,7 @@
 <script src="${context}/resource/util/vue.js" type="text/javascript"></script>
 <script>
     var Table ={
-        template:'<table :style="isline"><tr><td :style="numberstyle">{{number==null?"无数量":number}}</td></tr><tr><td>{{title==null?"无标题":title}}</td></tr><tr><td><button type="button">查看详情</button></td></tr></table>',
+        template:'<table :style="isline"><tr><td :style="numberstyle">{{number==null?"无数量":number}}</td></tr><tr><td>{{title==null?"无标题":title}}</td></tr><tr><td><button type="button" onclick="forward(1)">查看详情</button></td></tr></table>',
         props: ['number','numberstyle','title','type','isline']
     }
     var TempTwo = {
@@ -98,6 +98,9 @@
 </script>
 </body>
 <script>
+    function forward(type){
+        window.location.href = context+"/jump?page=admin/bill_list&type"+type;
+    }
     $(function(){
         createDepTree("tree",function(data){
             alert();
