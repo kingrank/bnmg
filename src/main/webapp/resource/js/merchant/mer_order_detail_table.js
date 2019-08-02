@@ -3,21 +3,23 @@ var adminTable;
 var admintype = 1;
 var table;
 var form;
+var laydate;
 layui.use(['form', 'table', 'laydate'], function(){
     table = layui.table;
     form = layui.form;
+    laydate = layui.laydate;
     adminTable = table.render({
         elem: '#test'
         ,url:'/getAdminByDepart'
         //,contentType: 'application/json'
         ,toolbar: '#table_toolbar'
-        ,defaultToolbar:['filter','print']
+        ,defaultToolbar:[]
         ,where:{
                 pcode:nodeId,
                 type:admintype
-            ,order_date:$("#order_date").val() // 账期
-            ,order_pay_state:$("#order_pay_state").val() // 账期缴费状态
-            ,order_invoice_state:$("#order_invoice_state").val() // 账期缴费开发票状态
+            ,order_time:$("#order_time").val() // 缴费起止时间
+            ,order_pay_state:$("#order_pay_state").val() // 账期缴费开发票状态
+            ,order_text:$("#order_text").val() // 请输入发票号、缴费金额
         }
         ,title: '用户数据表'
         ,initSort: {
@@ -35,13 +37,11 @@ layui.use(['form', 'table', 'laydate'], function(){
         }
         ,cols: [[
             {field:'id', title:'序号', width:80, fixed: 'left',align:'center', unresize: true, sort: false}
-            ,{field:'phone', title:'账期', fixed: 'left',align:'center',unresize: true , sort: false}
-            ,{field:'phone', title:'固定(元)', fixed: 'left',align:'center',unresize: true , sort: false}
-            ,{field:'phone', title:'管理费(元)', fixed: 'left',align:'center',unresize: true , sort: false}
-            ,{field:'phone', title:'费用(元)', fixed: 'left',align:'center',unresize: true , sort: false}
-            ,{field:'phone', title:'总额(元)', fixed: 'left',align:'center',unresize: true , sort: false}
-            ,{field:'username', title:'缴费状态', fixed: 'left',align:'center',unresize: true , sort: false}
+            ,{field:'phone', title:'缴费金额(元)', fixed: 'left',align:'center',unresize: true , sort: false}
+            ,{field:'phone', title:'缴费时间', fixed: 'left',align:'center',unresize: true , sort: false}
             ,{field:'depname', title:'发票开具', fixed: 'left',align:'center',unresize: true , sort: false}
+            ,{field:'phone', title:'发票号', fixed: 'left',align:'center',unresize: true , sort: false}
+            ,{field:'phone', title:'备注', fixed: 'left',align:'center',unresize: true , sort: false}
             ,{fixed: 'right', title:'操作', align:'center',toolbar: '#table_bar'}
             /*
             ,{field:'name', title:(admintype==0?'用户名称':'商户名称'),unresize: true , sort: true}
@@ -70,17 +70,6 @@ layui.use(['form', 'table', 'laydate'], function(){
                 }
             });
             */
-            $(".layui-table").find('td[data-field="username"]').each(function(){
-                var _div = $(this).find("div").eq(0);
-                var _div_value = _div.html();
-                if( _div_value == 'hah' ){ // 已缴费
-                    _div.addClass("xinbai_color_success");
-                }else if( _div_value == 'kendeji' ){ // 未交齐
-                    _div.addClass("xinbai_color_warning");
-                }else{// 未缴费
-                    _div.addClass("xinbai_color_danger");
-                }
-            });
             $(".layui-table").find('td[data-field="depname"]').each(function(){
                 var _div = $(this).find("div").eq(0);
                 var _div_value = _div.html();
@@ -127,9 +116,27 @@ layui.use(['form', 'table', 'laydate'], function(){
         var data = obj.data;
         //console.log(obj)
         switch(obj.event){
-            case 'table_detail':// 账单详情
-                var url = "/mer/order/order_datail?order="+data.username;
-                window.location.href = url;
+            case 'table_detail'://缴费记录
+                var content = createPayLog_content();
+                layer.open({
+                    type:1,
+                    title:['去缴费','color: #182A63;font-size: 16px;font-weight: bold;background-color:#E9F2FF;'],
+                    area: ['50%', '95%'],
+                    resize:true,
+                    offset: '1%',
+                    content: content,
+                    success:function(layero, index){
+                        //新加元素重新渲染表单 否则样式不对
+                        layui.form.render();
+                    },
+                    btn: [],
+                    yes: function(index, layero){
+                        //alert(JSON.stringify(choose));context
+                        var param = getFormData("addUser");
+                        param.depcode = choose.nodeId;
+                    }
+                });
+                layui.form.render();
                 break;
             case 'del':
                 layer.confirm('该操作将清楚商户所有信息，且无法恢复，真的删除行么', function(index){
@@ -158,75 +165,19 @@ layui.use(['form', 'table', 'laydate'], function(){
 
         //layer.msg('服务端排序。order by '+ obj.field + ' ' + obj.type);
     });
-    // 去缴费
-    $(document).on("click","#option_to_pay1",function(){
-        var content = createToPay_content();
-        layer.open({
-            type:1,
-            title:['去缴费','color: #182A63;font-size: 16px;font-weight: bold;background-color:#E9F2FF;'],
-            area: ['50%', '85%'],
-            resize:true,
-            offset: '5%',
-            content: content,
-            success:function(layero, index){
-                //新加元素重新渲染表单 否则样式不对
-                layui.form.render();
-            },
-            btn: [],
-            yes: function(index, layero){
-                //alert(JSON.stringify(choose));context
-                var param = getFormData("addUser");
-                param.depcode = choose.nodeId;
-            }
-        });
-        layui.form.render();
+
+//日期时间范围
+    laydate.render({
+        elem: '#order_time'
+        ,type: 'datetime'
+        ,range: true
     });
-    // 去缴费 拆分
-    $(document).on("click","#option_to_pay2",function(){
-        var content = createToPay_split_content();
-        layer.open({
-            type:1,
-            title:['去缴费','color: #182A63;font-size: 16px;font-weight: bold;background-color:#E9F2FF;'],
-            area: ['60%', '90%'],
-            resize:true,
-            offset: '5%',
-            content: content,
-            success:function(layero, index){
-                //新加元素重新渲染表单 否则样式不对
-                layui.form.render();
-            },
-            btn: [],
-            yes: function(index, layero){
-                //alert(JSON.stringify(choose));context
-                var param = getFormData("addUser");
-                param.depcode = choose.nodeId;
-            }
-        });
-        layui.form.render();
-    });
-    // 去缴费 二次拆分
-    $(document).on("click","#option_to_pay3",function(){
-        var content = createToPay_split2_content();
-        layer.open({
-            type:1,
-            title:['去缴费','color: #182A63;font-size: 16px;font-weight: bold;background-color:#E9F2FF;'],
-            area: ['60%', '90%'],
-            resize:true,
-            offset: '5%',
-            content: content,
-            success:function(layero, index){
-                //新加元素重新渲染表单 否则样式不对
-                layui.form.render();
-            },
-            btn: [],
-            yes: function(index, layero){
-                //alert(JSON.stringify(choose));context
-                var param = getFormData("addUser");
-                param.depcode = choose.nodeId;
-            }
-        });
-        layui.form.render();
-    });
+
+    // var content = createPayDetail_content(); // 正常账单
+    var content = createPayDetail_Split_content(); // 拆分账单
+    $("#order_detail").html(content);
+    layui.form.render();
+
     //监听提交
     form.on('submit(addUserSubmit)', function(data){
 
@@ -256,10 +207,298 @@ layui.use(['form', 'table', 'laydate'], function(){
 });
 
 /**
- * 制作去缴费弹出窗
+ * 制作 账单信息
  * @returns {string}
  */
-function createToPay_content(){
+function createPayDetail_content(){
+    var content = "<form class=\"layui-form\" action=\"\" style='background-color: #fff;'>" +
+                    "<div class='layui-row' style='font-size: 14px;margin-top: 5px;padding: 5px 30px;'>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>商户号:</div>" +
+                        "<div class='layui-col-sm4'>L01F002，L02F001，L02F002，L02F003，L02F004</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>通知单编号：</div>" +
+                        "<div class='layui-col-sm4'>42</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>租户名称:</div>" +
+                        "<div class='layui-col-sm4'>汉堡王(北京)餐饮管理有限公司</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>费用计费周期：</div>" +
+                        "<div class='layui-col-sm4'>05/01/2019 - 05/31/2019</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>租赁品牌：</div>" +
+                        "<div class='layui-col-sm4'>汉堡王</div>" +
+                    "</div>";
+    content = content
+        +"<div class='layui-row' style='margin: 5px 30px;border: 2px #247CFF solid; '>" +
+        "<table class='layui-table' lay-skin='nob' >"
+        +"<thead>"
+        +"    <tr style='background-color: #F3F8FF;color: #182A63;'>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>项目</span></div></th>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>内容</span></div></th>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>RMB</span></div></th>"
+        +"    </tr> "
+        +"</thead>"
+        +"<tbody>"
+        +"    <tr>"
+        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>固定</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">" +
+        "           固定租金" +
+        "           <button type='button' class='layui-btn layui-btn-danger xinbai_bg_color_success layui-btn-xs xinbai-btn-small'>已缴费</button>" +
+        "        </td>"
+        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
+        +"        <td align=\"center\">164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">" +
+        "           提成租金" +
+        "           <button type='button' class='layui-btn layui-btn-danger layui-btn-xs xinbai-btn-small'>未交齐</button>" +
+        "        </td>"
+        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
+        +"        <td align=\"center\">164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>管理费</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">" +
+        "           物业管理费" +
+        "           <button type='button' class='layui-btn layui-btn-danger layui-btn-xs xinbai_bg_color_danger xinbai-btn-small'>未缴费</button>" +
+        "        </td>"
+        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
+        +"        <td align=\"center\">11,375.83</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>费用</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">水费</td>"
+        +"        <td align=\"center\">2019年5月 水费</td>"
+        +"        <td align=\"center\">39，600.00</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">电费</td>"
+        +"        <td align=\"center\">2019年5月 电费</td>"
+        +"        <td align=\"center\">670.00</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">公共电力设备维护费</td>"
+        +"        <td align=\"center\">2019年5月 公共电力维护管理费</td>"
+        +"        <td align=\"center\">15,120.00</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>" +
+        "           总计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"</tbody>"
+        +"</table>"
+        +"</div>";
+
+    content = content + "<div class='layui-row' style='background-color: #F3F8FF;font-size: 20px;font-weight:600;margin-top: 10px;padding: 5px 35px;'>" +
+        "<div class='layui-col-sm4 layui-col-md-offset4' style='text-align: center;'>本期账单总计：132,465.00</div>" +
+        "</div>";
+
+    var remark = createXinbaiRemark();
+    content = content + remark + "<div class='layui-row' style='padding: 0px 0px;color: #1C1C1C;font-size: 16px;font-weight: 600;'>" +
+        "<div class='layui-col-sm3 layui-col-md-offset9'>北京易喜新世界百货有限公司财务部</div>" +
+        "<div class='layui-col-sm1 layui-col-md-offset10'>07/09/2019</div>" +
+        "</form>";
+
+    return content;
+}
+/**
+ * 制作 拆分账单信息
+ * @returns {string}
+ */
+function createPayDetail_Split_content(){
+    var content = "<form class=\"layui-form\" action=\"\" style='background-color: #fff;'>" +
+                    "<div class='layui-row' style='font-size: 14px;margin-top: 5px;padding: 5px 30px;'>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>商户号:</div>" +
+                        "<div class='layui-col-sm4'>L01F002，L02F001，L02F002，L02F003，L02F004</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>通知单编号：</div>" +
+                        "<div class='layui-col-sm4'>42</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>租户名称:</div>" +
+                        "<div class='layui-col-sm4'>汉堡王(北京)餐饮管理有限公司</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>费用计费周期：</div>" +
+                        "<div class='layui-col-sm4'>05/01/2019 - 05/31/2019</div>" +
+                        "<div class='layui-col-sm2' style='color:#98A2BC;'>租赁品牌：</div>" +
+                        "<div class='layui-col-sm4'>汉堡王</div>" +
+                    "</div>";
+    content = content
+        +"<div class='layui-row' style='margin: 5px 30px;border: 2px #247CFF solid; '>"
+        +"<table class='layui-table' lay-skin='nob' >"
+        +"<thead>"
+        +"    <tr style='background-color: #F3F8FF;color: #182A63;'>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>项目</span></div></th>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>内容</span></div></th>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>RMB</span></div></th>"
+        +"    </tr> "
+        +"</thead>"
+        +"<tbody>"
+        +"    <tr>"
+        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>固定</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">" +
+        "           固定租金" +
+        "           <button type='button' class='layui-btn layui-btn-danger xinbai_bg_color_success layui-btn-xs xinbai-btn-small'>已缴费</button>" +
+        "        </td>"
+        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
+        +"        <td align=\"center\">164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>管理费</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">" +
+        "           物业管理费" +
+        "           <button type='button' class='layui-btn layui-btn-danger layui-btn-xs xinbai_bg_color_danger xinbai-btn-small'>未缴费</button>" +
+        "        </td>"
+        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
+        +"        <td align=\"center\">11,375.83</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>费用</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">水费</td>"
+        +"        <td align=\"center\">2019年5月 水费</td>"
+        +"        <td align=\"center\">39，600.00</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">电费</td>"
+        +"        <td align=\"center\">2019年5月 电费</td>"
+        +"        <td align=\"center\">670.00</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\">公共电力设备维护费</td>"
+        +"        <td align=\"center\">2019年5月 公共电力维护管理费</td>"
+        +"        <td align=\"center\">15,120.00</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>" +
+        "           总计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"</tbody>"
+        +"</table>"
+        +"</div>"
+        +"<div class='layui-row' style='margin: 5px 30px;border: 2px #247CFF solid; '>"
+        +"<table class='layui-table' lay-skin='nob' >"
+        +"<thead>"
+        +"    <tr style='background-color: #F3F8FF;color: #182A63;'>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>项目</span></div></th>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>内容</span></div></th>"
+        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>RMB</span></div></th>"
+        +"    </tr> "
+        +"</thead>"
+        +"<tbody>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>" +
+        "           提成租金" +
+        "           <button type='button' class='layui-btn layui-btn-danger layui-btn-xs xinbai-btn-small'  style='font-weight: normal;'>未交齐</button>" +
+        "        </td>"
+        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
+        +"        <td align=\"center\">164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>" +
+        "           小计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"    <tr>"
+        +"        <td align=\"left\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>" +
+        "           总计" +
+        "        </td>"
+        +"        <td align=\"center\">&nbsp;</td>"
+        +"        <td align=\"center\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>164，987.46</td>"
+        +"    </tr>"
+        +"</tbody>"
+        +"</table>"
+        +"</div>";
+
+    content = content + "<div class='layui-row' style='background-color: #F3F8FF;font-size: 20px;font-weight:600;margin-top: 10px;padding: 5px 35px;'>" +
+        "<div class='layui-col-sm4 layui-col-md-offset4' style='text-align: center;'>本期账单总计：132,465.00</div>" +
+        "</div>";
+
+    var remark = createXinbaiRemark();
+    content = content + remark + "<div class='layui-row' style='padding: 0px 0px;color: #1C1C1C;font-size: 16px;font-weight: 600;'>" +
+        "<div class='layui-col-sm3 layui-col-md-offset9'>北京易喜新世界百货有限公司财务部</div>" +
+        "<div class='layui-col-sm1 layui-col-md-offset10'>07/09/2019</div>" +
+        "</form>";
+
+    return content;
+}
+
+/*创建 新百 默认描述备注信息*/
+function createXinbaiRemark(){
+    var remark = "<div class='layui-row' style='padding: 0px 0px;'>" +
+            "<div class='layui-col-sm6' style='padding-top: 10px;font-size: 12px;color: #8894B2;'>" +
+            "1. 请您收到本结算通知后速将上述款项汇至我司。如逾期未付款，我司将根据合同条款规定按日收取违约金。 </br>" +
+            "2. 通知单I 的内容包括该租户下期固定租金、本期浮动租金金额及本期发生的水电费、信用卡费、其他费用等。</br>" +
+            "3. 本公司的汇款帐户为如下:</br>" +
+            " &nbsp;&nbsp;&nbsp;&nbsp;币&nbsp;&nbsp;种:  人民币</br>" +
+            " &nbsp;&nbsp;&nbsp;&nbsp;户&nbsp;&nbsp;名: 北京易喜新世界百货有限公司</br>" +
+            " &nbsp;&nbsp;&nbsp;&nbsp;帐&nbsp;&nbsp;号:  0200015819024533565</br>" +
+            " &nbsp;&nbsp;&nbsp;&nbsp;开户银行:  工行新世界支行</br>" +
+            "4. 联系方式:\n" +
+            " &nbsp;&nbsp;&nbsp;&nbsp;* 传真号码: 010-67080940 联系电话: 010-67083794 联系人: 北京二期</br>" +
+            "5、如已付款或款项在途请忽视本通知书。"+
+            "</div>" +
+        "</div>";
+    return remark;
+}
+/**
+ * 制作 缴费详情 弹出窗
+ * @returns {string}
+ */
+function createPayLog_content(){
     var content = "<form class=\"layui-form\" action=\"\">" +
                     "<div class='layui-row' style='font-size: 14px;margin-top: 5px;padding: 5px 30px;'>" +
                         "<div class='layui-col-sm2' style='color:#98A2BC;'>缴费账期：</div>" +
@@ -321,237 +560,26 @@ function createToPay_content(){
         +"</table>"
         +"</div>";
 
-    content = content + "<div class='layui-row' style='font-size: 16px;font-weight:600;margin-top: 10px;padding: 5px 35px;'>" +
-        "<div class='layui-col-sm1' style='padding-top: 10px;'>总计</div>" +
-        "<div class='layui-col-sm3' style='padding-top: 10px;color:#247CFF;'>150,752.46</div>" +
-        "<div class='layui-col-sm6'>&nbsp;</div>" +
-        "<div class='layui-col-sm2'>" +
-        "    <div class=\"\">" +
-        "      <button type=\"button\" class=\"layui-btn\" style='width:120px;height:40px;background:#247CFF;border-radius:4px;' lay-submit=\"\" lay-filter=\"orderPaySubmit\">" +
-        "       确定缴费" +
-        "     </button>" +
-        "    </div>" +
-        "</div>" +
-        "</div>" +
-        "</form>";
-
-    return content;
-}
-/**
- * 制作去缴费 已拆分信息弹出窗
- * @returns {string}
- */
-function createToPay_split_content(){
-    var content = "<form class=\"layui-form\" action=\"\">" +
-        "<div class='layui-row' style='font-size: 14px;margin-top: 5px;padding: 5px 30px;'>" +
-        "<div class='layui-col-sm2' style='color:#98A2BC;'>缴费账期：</div>" +
-        "<div class='layui-col-sm2'>2019-07</div>" +
-        "<div class='layui-col-sm2' style='color:#98A2BC;'>本期应缴：</div>" +
-        "<div class='layui-col-sm2'>40000.00</div>" +
-        "</div>";
-    content = content
-        +"<div class='layui-row' style='font-size: 14px;padding: 5px 30px;'>" +
-        "<div class='layui-col-sm3' style='color:#98A2BC;'>请选择缴费项目：</div>" +
-        "</div>";
-    content = content
-        +"<div class='layui-row' style='margin: 0px 30px;border: 2px #247CFF solid; '>"
-        + "<table class='layui-table' >"
-        +"<thead>"
-        +"    <tr style='background-color: #F3F8FF;color: #182A63;'>"
-        +"        <th>&nbsp</th>"
-        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>项目</span></div></th>"
-        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>内容</span></div></th>"
-        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>RMB</span></div></th>"
-        +"    </tr> "
-        +"</thead>"
-        +"<tbody>"
-        +"    <tr>"
-        +"        <td align=\"center\" rowspan='8'>" +
-        "           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\" checked=''>" +
-        "        </td>"
-        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>固定</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">固定租金</td>"
-        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
-        +"        <td align=\"center\">164，987.46</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>管理费</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">物业管理费</td>"
-        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
-        +"        <td align=\"center\">11,375.83</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>费用</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">水费</td>"
-        +"        <td align=\"center\">2019年5月 水费</td>"
-        +"        <td align=\"center\">39，600.00</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">电费</td>"
-        +"        <td align=\"center\">2019年5月 电费</td>"
-        +"        <td align=\"center\">670.00</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">公共电力设备维护费</td>"
-        +"        <td align=\"center\">2019年5月 公共电力维护管理费</td>"
-        +"        <td align=\"center\">15,120.00</td>"
-        +"    </tr>"
-        +"    <tr style='border-top: 2px #247CFF solid;'>"
-        +"        <td align=\"center\">" +
-        "           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">" +
-        "        </td>"
-        +"        <td align=\"left\" style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>提成租金</td>"
-        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
-        +"        <td align=\"center\">164，987.46</td>"
-        +"    </tr>"
-        +"</tbody>"
-        +"</table>"
-        +"</div>";
-
-    content = content
-        +"<div class='layui-row' style='font-size: 14px;padding: 0px 30px;'>" +
-        "<div class='layui-col-sm3' style='color:#98A2BC;'>已选：固定+管理费+费用</div>" +
+    content = content + "<div class='layui-row' style='background-color: #F3F8FF;font-size: 20px;font-weight:600;margin-top: 10px;padding: 5px 35px;'>" +
+        "<div class='layui-col-sm4 layui-col-md-offset4' style='text-align: center;'>总计：132,465.00</div>" +
         "</div>";
 
-    content = content + "<div class='layui-row' style='font-size: 16px;font-weight:600;padding: 0px 35px;'>" +
-        "<div class='layui-col-sm1' style='padding-top: 10px;'>总计</div>" +
-        "<div class='layui-col-sm3' style='padding-top: 10px;color:#247CFF;'>150,752.46</div>" +
-        "<div class='layui-col-sm6'>&nbsp;</div>" +
-        "<div class='layui-col-sm2'>" +
-        "    <div class=\"\">" +
-        "      <button type=\"button\" class=\"layui-btn\" style='width:120px;height:40px;background:#247CFF;border-radius:4px;' lay-submit=\"\" lay-filter=\"orderPaySubmit\">" +
-        "       确定缴费" +
-        "     </button>" +
-        "    </div>" +
-        "</div>" +
+    content = content +
+
+        "<div class='layui-row' style='font-size: 14px;margin-top: 5px;padding: 2px 30px;'>" +
+        "<div class='layui-col-sm2' style='color:#98A2BC;'>开具发票：</div>" +
+        "<div class='layui-col-sm3'>已开具</div>" +
         "</div>"+
-        "</form>";
 
-    return content;
-}
-/**
- * 制作去缴费 二次拆分信息弹出窗
- * @returns {string}
- */
-function createToPay_split2_content(){
-    var content = "<form class=\"layui-form\" action=\"\">" +
-        "<div class='layui-row' style='font-size: 14px;margin-top: 5px;padding: 5px 30px;'>" +
-        "<div class='layui-col-sm2' style='color:#98A2BC;'>缴费账期：</div>" +
-        "<div class='layui-col-sm2'>2019-07</div>" +
-        "<div class='layui-col-sm2' style='color:#98A2BC;'>本期应缴：</div>" +
-        "<div class='layui-col-sm2'>40000.00</div>" +
-        "</div>";
-    content = content
-        +"<div class='layui-row' style='font-size: 14px;padding: 5px 30px;'>" +
-        "<div class='layui-col-sm3' style='color:#98A2BC;'>请选择缴费项目：</div>" +
-        "</div>";
-    content = content
-        +"<div class='layui-row' style='margin: 0px 30px;border: 2px #247CFF solid; '>"
-        + "<table class='layui-table' lay-skin=\"nob\">"
-        +"<thead>"
-        +"    <tr style='background-color: #F3F8FF;color: #182A63;'>"
-        +"        <th align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split_all\" lay-skin=\"primary\" title=\"\">"
-        +"      </th>"
-        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>项目</span></div></th>"
-        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>内容</span></div></th>"
-        +"        <th style='font-size: 16px;font-weight: bold;'><div class=\"layui-table-cell\" align=\"center\"><span>RMB</span></div></th>"
-        +"    </tr> "
-        +"</thead>"
-        +"<tbody>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>固定</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"center\">固定租金</td>"
-        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
-        +"        <td align=\"center\">164，987.46</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"center\">提成租金</td>"
-        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
-        +"        <td align=\"center\">164，987.46</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>管理费</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"center\">物业管理费</td>"
-        +"        <td align=\"center\">1989-10-14 - 1989-10-14</td>"
-        +"        <td align=\"center\">11,375.83</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"left\" colspan='3' style='font-size: 16px;color:#182A63;font-weight: bold;margin-left: 50px;'>费用</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"center\">水费</td>"
-        +"        <td align=\"center\">2019年5月 水费</td>"
-        +"        <td align=\"center\">39，600.00</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"center\">电费</td>"
-        +"        <td align=\"center\">2019年5月 电费</td>"
-        +"        <td align=\"center\">670.00</td>"
-        +"    </tr>"
-        +"    <tr>"
-        +"        <td align=\"center\">"
-        +"           <input type=\"checkbox\" name=\"checkbox_order_split\" lay-skin=\"primary\" title=\"\">"
-        +"        </td>"
-        +"        <td align=\"center\">公共电力设备维护费</td>"
-        +"        <td align=\"center\">2019年5月 公共电力维护管理费</td>"
-        +"        <td align=\"center\">15,120.00</td>"
-        +"    </tr>"
-        +"</tbody>"
-        +"</table>"
-        +"</div>";
+        "<div class='layui-row' style='font-size: 14px;padding: 2px 30px;'>" +
+        "<div class='layui-col-sm2' style='color:#98A2BC;'>发票编号：</div>" +
+        "<div class='layui-col-sm5'>13486318946</div>" +
+        "</div>"+
 
-    content = content
-        +"<div class='layui-row' style='font-size: 14px;padding: 0px 30px;'>" +
-        "<div class='layui-col-sm3' style='color:#98A2BC;'>已选：固定+管理费+费用</div>" +
-        "</div>";
-
-    content = content + "<div class='layui-row' style='font-size: 16px;font-weight:600;padding: 0px 35px;'>" +
-        "<div class='layui-col-sm1' style='padding-top: 10px;'>总计</div>" +
-        "<div class='layui-col-sm3' style='padding-top: 10px;color:#247CFF;'>150,752.46</div>" +
-        "<div class='layui-col-sm6'>&nbsp;</div>" +
-        "<div class='layui-col-sm2'>" +
-        "    <div class=\"\">" +
-        "      <button type=\"button\" class=\"layui-btn\" style='width:120px;height:40px;background:#247CFF;border-radius:4px;' lay-submit=\"\" lay-filter=\"orderPaySubmit\">" +
-        "       确定缴费" +
-        "     </button>" +
-        "    </div>" +
-        "</div>" +
-        "</div>" +
+        "<div class='layui-row' style='font-size: 14px;padding: 2px 30px;'>" +
+        "<div class='layui-col-sm2' style='color:#98A2BC;'>备注信息：</div>" +
+        "<div class='layui-col-sm5'>这里是发票备注</div>" +
+        "</div>"+
         "</form>";
 
     return content;

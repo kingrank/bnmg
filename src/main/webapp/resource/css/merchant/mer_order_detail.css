@@ -1,0 +1,6 @@
+/*卡片圆角*/
+.layui-card {
+    border-radius:3px;
+}
+/*去掉 table x轴滚动条*/
+.layui-table-body{overflow-x: hidden;}

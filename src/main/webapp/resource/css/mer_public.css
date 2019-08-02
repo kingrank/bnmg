@@ -9,7 +9,18 @@
 .xinbai-form-label{
     padding: 9px 5px;
 }
-
+/*自定义 按钮 样式*/
+.xinbai-btn{
+    height: 35px;
+    line-height: 35px;
+    padding: 0 30px;
+}
+/*自定义 返回按钮 样式*/
+.xinbai-btn-back{
+    background-color:#E9F2FF;
+    color: #247CFF;
+    border:1px solid #317EE7;
+}
 /*自定义颜色：normal，蓝色*/
 .xinbai_color_normal{
     color: #1E9FFF;
@@ -43,4 +54,15 @@
     border-color: #3984F3!important;
     background-color: #3984F3;
     color: #fff;
+}
+/*重写 tab 选中 颜色：蓝色 #3984F3 */
+.layui-tab-brief>.layui-tab-title .layui-this{
+    color: #247CFF;
+    font-weight:600;
+}
+.layui-tab-brief>.layui-tab-more li.layui-this:after, .layui-tab-brief>.layui-tab-title .layui-this:after {
+    border: none;
+    border-radius: 0;
+    border-bottom: 2px solid #247CFF;
+    font-weight:600;
 }
