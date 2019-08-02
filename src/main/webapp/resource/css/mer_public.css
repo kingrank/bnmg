@@ -1,0 +1,46 @@
+/*自定义最小按钮*/
+.xinbai-btn-small{
+    height:16px;
+    line-height:16px;
+    padding:0 3px;
+    font-size:12px
+}
+/*自定义 form：lable 边距*/
+.xinbai-form-label{
+    padding: 9px 5px;
+}
+
+/*自定义颜色：normal，蓝色*/
+.xinbai_color_normal{
+    color: #1E9FFF;
+}
+.xinbai_bg_color_normal{
+    background-color: #1E9FFF;
+}
+/*自定义颜色：警告，橘黄*/
+.xinbai_color_warning{
+    color: #F67F0B;
+}
+.xinbai_bg_color_warning{
+    background-color: #F67F0B;
+}
+/*自定义颜色：成功，绿色*/
+.xinbai_color_success{
+    color: #12C14F;
+}
+.xinbai_bg_color_success{
+    background-color: #12C14F;
+}
+/*自定义颜色：失败，孜红 */
+.xinbai_color_danger{
+    color: #FF5353;
+}
+.xinbai_bg_color_danger{
+    background-color: #FF5353;
+}
+/*重写复选框选中 颜色：蓝色 #3984F3 */
+.layui-form-checked[lay-skin=primary] i {
+    border-color: #3984F3!important;
+    background-color: #3984F3;
+    color: #fff;
+}

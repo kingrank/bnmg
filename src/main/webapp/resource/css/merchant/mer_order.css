@@ -1,0 +1,11 @@
+/*卡片圆角*/
+.layui-card {
+    border-radius:3px;
+}
+/*固定卡片高度*/
+.layui-card-body {
+    padding: 3px 5px;
+    height: 130px;
+    line-height: 130px;
+    /*overflow: auto; */
+}

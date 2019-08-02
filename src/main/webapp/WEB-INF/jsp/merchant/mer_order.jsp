@@ -129,7 +129,7 @@
                                 <div class="layui-row">
                                     <div class="layui-col-sm2"></div>
                                     <div class="layui-col-sm10 layui-col-md-offset4" style="margin-top: 45px;">
-                                        <button type="button" class="layui-btn layui-btn-normal layui-btn-radius" id="option_to_pay">去缴费(未拆分) &gt; </button>
+                                        <button type="button" class="layui-btn layui-btn-normal layui-btn-radius" id="option_to_pay3">去缴费(未拆分) &gt; </button>
                                         <%--
                                         <button type="button" class="layui-btn layui-btn-normal layui-btn-radius">去缴费(已拆分) &gt; </button>
                                         <button type="button" class="layui-btn layui-btn-normal layui-btn-radius">去缴费(二次拆分) &gt; </button>

@@ -20,7 +20,7 @@
     <script src="${context}/resource/util/treeUtil.js" type="text/javascript"></script>
 </head>
 <body>
-<input type="hidden" id="depcode" value="<shiro:principal property="depcode"/>">
+<input type="" id="depcode" value="<shiro:principal property="depcode"/>">
     <div class="layui-tab">
         <fieldset class="layui-elem-field layui-field-title" style="margin-top: 20px;">
             <legend>商户管理</legend>
