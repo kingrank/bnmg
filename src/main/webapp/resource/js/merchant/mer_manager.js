@@ -45,7 +45,7 @@ layui.use(['form', 'table', 'laydate'], function(){
             case 'del':
                 var data = checkStatus.data;
                 if(data.length>0){
-                    layer.confirm('该操作将清楚商户所有信息，且无法恢复，真的删除？', function(index){
+                    layer.confirm('该操作将清楚商户所有信息，且无法恢复，真的删除行么', function(index){
                         var admin_str = "";
                         for(i in data){
                             admin_str = admin_str+((i==0?"":",")+data[i].username);
@@ -113,13 +113,13 @@ layui.use(['form', 'table', 'laydate'], function(){
         var data = obj.data;
         //console.log(obj)
         if(obj.event === 'del'){
-            layer.confirm('该操作将清楚商户所有信息，且无法恢复，真的删除行么', function(index){
+            layer.confirm('该操作将清楚商户所有信息，且无法恢复，真的删除？', function(index){
                 //obj.del();
                 editUser('admininfo',adminTable,2,{userNames:data.username});
                 layer.close(index);
             });
         } else if(obj.event === 'edit'){
-            var content = createFormDom('admininfo',data);
+            var content = createFormDom('admininfo',data,'admin');
             layer.open({
                 title:'信息编辑',
                 area: ['40%', '70%'],
@@ -132,6 +132,33 @@ layui.use(['form', 'table', 'laydate'], function(){
                 },
                 yes: function(index, layero){
                     editUser('admininfo',adminTable,1);
+                    layer.close(index); //如果设定了yes回调，需进行手工关闭
+                }
+            });
+        }else if(obj.event === 'auth'){
+            layer.open({
+                type:1,
+                title: '权限选择：'
+                ,offset: '10%'
+                ,content: '<div style="width: 100%;overflow: auto;float: left;" id="authtree">\n' +
+                '            <ul id="authSelect" class="dtree" data-id="0"></ul>\n' +
+                '        </div>',
+                success:function () {
+                    createAuthTree("authSelect",onselect,{by:"user:"+data.username});
+                },
+                btn: ['确定'],
+                yes: function(index, layero){
+                    var flag = dtree.changeCheckbarNodes("authSelect");
+                    if(flag){
+                        //获取选中权限
+                        var params = dtree.getCheckbarNodesParam("authSelect");
+                        var auth_ids = "";
+                        for(i in params){
+                            auth_ids = auth_ids+((i==0?"":",")+params[i].nodeId);
+                        }
+
+                        changeUserAuth({ids:auth_ids,username:data.username});
+                    }
                     layer.close(index); //如果设定了yes回调，需进行手工关闭
                 }
             });
@@ -169,7 +196,7 @@ layui.use(['form', 'table', 'laydate'], function(){
             btn: ['确定'],
             yes: function(index, layero){
                 layer.close(index); //如果设定了yes回调，需进行手工关闭
-            }
+             }
         });
     });
     //监听提交
@@ -235,34 +262,6 @@ function createAddForm(){
     content = content+"</form>";
     return content;
 }
-function createFormDom(formid,data){
-    var content = "<form class=\"layui-form layui-form-pane\" action=\"\" id=\""+formid+"\" method=\"post\">\n" ;
-    var selectstr = "<select name=\"city\" lay-verify=\"\">\n" +
-        "  <option value=\"0\" >正常</option>\n" +
-        "  <option value=\"1\" >停用</option>\n" +
-        "</select>"
-    for(i in data){
-        if(CONS.admin[i]==undefined){
-            continue;
-        }
-        content = content +"<div style='display:"+(CONS.admin[i].show==true?"block":"none")+"' class=\"layui-form-item\">\n" +
-            "                <label class=\"layui-form-label\">"+CONS.admin[i].title+"</label>\n" +
-            "                <div class=\"layui-input-inline\">\n" ;
-        if(i=="status"){
-            content = content +"<select name=\""+i+"\" lay-verify=\"\">\n" +
-                "  <option value=\"0\" "+(data[i]==0?"selected":"")+" >正常</option>\n" +
-                "  <option value=\"1\" "+(data[i]==1?"selected":"")+">停用</option>\n" +
-                "</select>" ;
-        }else{
-            content = content +"                    <input type=\"text\" value=\""+CONS.admin[i].format(data[i])+"\"name=\""+i+"\" "+(CONS.admin[i].disable==true?"readonly":"")+" lay-verify=\"required\" placeholder=\"请输入\" autocomplete=\"off\" class=\"layui-input\">\n";
-        }
-        content = content +"</div>\n" +
-            "            </div>" ;
-
-    }
-    content = content+"</form>";
-    return content;
-}
 var choose;
 function onselect(data){
     choose = data.param;
@@ -283,7 +282,7 @@ function changeDepart(obj,tables){
         },
         success : function(data) {
             if(data.status==0){
-                layer.msg("操作成功");
+                    layer.msg("操作成功");
                 tables.reload();
             }else{
                 layer.msg(data.msg, {icon: 5});
@@ -321,6 +320,28 @@ function editUser(formid,tables,type,obj){
             if(data.status==0){
                 layer.msg("操作成功");
                 tables.reload();
+            }else{
+                layer.msg(data.msg, {icon: 5});
+            }
+        }
+    });
+}
+/**
+ *权限编辑
+ * */
+function changeUserAuth(obj){
+    $.ajax({
+        async : true,
+        cache : false,
+        type : 'POST',
+        url : '/userPutAuth',// 请求的action路径
+        data : obj,
+        error : function(XMLHttpRequest, textStatus, errorThrown) {// 请求失败处理函数
+            alert("操作异常!");
+        },
+        success : function(data) {
+            if(data.status==0){
+                layer.msg("操作成功");
             }else{
                 layer.msg(data.msg, {icon: 5});
             }

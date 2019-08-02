@@ -1,0 +1,73 @@
+/*index.jsp begin*/
+.index-title-lable{
+    float: left;
+    width: 100%;
+    text-align: left;
+    height: 30px;
+    line-height: 30px;
+    margin-top: 10px;
+}
+.index-div{
+    float: left;width: 100%;
+    box-sizing: border-box;
+    border: 1px #DDDFE2 solid;
+    border-radius: 8px;
+}
+.info-tr{
+    float: left;
+    width: 100%;
+}
+.info-tr .info-td{
+    float: left;
+}
+.info-tr .info-td table{
+    text-align: center;
+    width: 100%;
+    margin: 10% 0;
+}
+.info-tr .info-td table tr:nth-child(1) td{
+    padding: 10px;
+    font-size: 30px;
+}
+.info-tr .info-td table tr:nth-child(2) td{
+    font-size: 11px;
+}
+.info-tr .info-td table tr:nth-child(3) td{
+    padding: 15px;
+}
+.info-tr .info-td table tr:nth-child(3) td button{
+    border: 1px #247CFF solid;
+    font-size: 9px;
+    padding: 2% 10%;
+    border-radius: 10px;
+    color: #247CFF;
+    background: #F4F9FF;
+}
+.wd40{
+    width: 40%;
+}
+.wd50{
+    width: 50%;
+}
+.wd60{
+    width: 60%;
+}
+.style1 .info-td{
+    width: 70%
+}
+.style1 .info-td table tr:nth-child(1) td{
+    font-size: 35px;
+}
+.style1 .info-td table tr:nth-child(2) td{
+    font-size: 15px;padding: 1% 0;
+}
+.style1 .rightdiv{
+    width: 30%;float:left
+}
+.style1 .rightdiv table{
+    text-align: left; width: 100%; margin: 38% 0px;font-size: 13px;
+}
+.style1 .rightdiv table tr td{
+    width: 40%;padding: 1%;
+}
+/* index.jsp end*/

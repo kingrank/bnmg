@@ -22,12 +22,11 @@ import java.util.Map;
 public class UserService {
     @Autowired
     private AdminDao adminDao;
-    @CacheUtil(value ="user", key = "user_#loginName")
-    @Cacheable(value = "user", key = "'user_'+ #userName")
+    @Cacheable(value = "user", key = "'user_'+ #loginName")
     public Admin getUserInfo(String loginName){
         return adminDao.get(loginName);
     }
-    @Cacheable(value = "user", key = "'usertype_'+ #userName")
+    @Cacheable(value = "user", key = "'usertype_'+ #loginName")
     public Map getAdminType(String loginName) throws Exception {
         List<Map> list = adminDao.getAdminType(loginName);
         if(list==null||list.size()==0){
