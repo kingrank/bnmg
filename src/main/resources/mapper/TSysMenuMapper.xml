@@ -90,6 +90,6 @@
           SELECT authcode FROM `t_sys_role_auth` WHERE roleid IN(
             SELECT roleid FROM `t_sys_admin_role` WHERE username = #{loginName}
             )
-      ) order by orders
+      ) order by orders desc
   </select>
 </mapper>
